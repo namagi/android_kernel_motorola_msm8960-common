@@ -1,0 +1,14 @@
+#
+#   frandom - pseudo-random number generator
+#
+
+config FRANDOM
+	tristate "Fast Pseudorandom Number Generator"
+	---help---
+	  frandom is a Linux kernel module, which implements a fast random number generator (RNG).
+	  It is the character driver of /dev/frandom, working like /dev/urandom, only 10-50 times faster (depending on platform)
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called frandom.
+
+	  If unsure, say N.
