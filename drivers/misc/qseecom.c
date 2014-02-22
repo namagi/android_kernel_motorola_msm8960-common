@@ -632,6 +632,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 	}
 
 	req.qsee_cmd_id = QSEOS_APP_LOOKUP_COMMAND;
+	load_img_req.img_name[MAX_APP_NAME_SIZE-1] = '\0';
 	memcpy(req.app_name, load_img_req.img_name, MAX_APP_NAME_SIZE);
 
 	/*  SCM_CALL  to check if app_id for the mentioned app exists */
