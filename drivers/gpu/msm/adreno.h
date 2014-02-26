@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2008-2012,2014 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -40,6 +40,7 @@
 #define KGSL_CMD_INTERNAL_IDENTIFIER	0x2EEDD00D
 #define KGSL_START_OF_IB_IDENTIFIER	0x2EADEABE
 #define KGSL_END_OF_IB_IDENTIFIER	0x2ABEDEAD
+#define KGSL_NOP_DATA_FILLER		0xFEEDFACE
 
 #ifdef CONFIG_MSM_SCM
 #define ADRENO_DEFAULT_PWRSCALE_POLICY  (&kgsl_pwrscale_policy_tz)
