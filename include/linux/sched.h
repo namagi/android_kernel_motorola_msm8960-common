@@ -902,7 +902,8 @@ extern int __weak arch_sd_sibiling_asym_packing(void);
 static inline int sd_power_saving_flags(void)
 {
 	if (sched_mc_power_savings | sched_smt_power_savings)
-		return SD_BALANCE_NEWIDLE;
+		//return SD_BALANCE_NEWIDLE;
+		return SD_POWERSAVINGS_BALANCE;
 
 	return 0;
 }
