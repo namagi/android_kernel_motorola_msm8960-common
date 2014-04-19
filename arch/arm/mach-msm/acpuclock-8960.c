@@ -75,6 +75,12 @@
 #endif
 #define HFPLL_LOW_VDD_PLL_L_MAX	0x28
 
+#ifdef CONFIG_CPU_OVERCLOCK
+#define HFPLL_MAX_VDD		 1350000
+#else
+#define HFPLL_MAX_VDD		 1300000
+#endif
+
 #define SECCLKAGD		BIT(4)
 
 /* PTE EFUSE register. */
@@ -146,11 +152,7 @@ static struct scalable scalable_8960[] = {
 			.hfpll_base      = MSM_HFPLL_BASE + 0x200,
 			.aux_clk_sel     = MSM_ACC0_BASE  + 0x014,
 			.l2cpmr_iaddr    = L2CPUCPMR_IADDR,
-#ifdef CONFIG_CPU_OVERCLOCK
-			.vreg[VREG_CORE] = { "krait0",     1350000 },
-#else
-			.vreg[VREG_CORE] = { "krait0",     1300000 },
-#endif
+			.vreg[VREG_CORE] = { "krait0",     HFPLL_MAX_VDD },
 			.vreg[VREG_MEM]  = { "krait0_mem", 1150000,
 					     RPM_VREG_VOTER1,
 					     RPM_VREG_ID_PM8921_L24 },
@@ -168,7 +170,7 @@ static struct scalable scalable_8960[] = {
 			.hfpll_base      = MSM_HFPLL_BASE + 0x300,
 			.aux_clk_sel     = MSM_ACC1_BASE  + 0x014,
 			.l2cpmr_iaddr    = L2CPUCPMR_IADDR,
-			.vreg[VREG_CORE] = { "krait1",     1350000 },
+			.vreg[VREG_CORE] = { "krait1",     HFPLL_MAX_VDD },
 			.vreg[VREG_MEM]  = { "krait0_mem", 1150000,
 					     RPM_VREG_VOTER2,
 					     RPM_VREG_ID_PM8921_L24 },
@@ -526,10 +528,10 @@ static struct acpu_level acpu_freq_tbl_8960_kraitv2_nom[] = {
 	{ 0, {  1404000, HFPLL, 1, 0, 0x34 }, L2(16), 1187500 },
 	{ 1, {  1458000, HFPLL, 1, 0, 0x36 }, L2(16), 1187500 },
 	{ 1, {  1512000, HFPLL, 1, 0, 0x38 }, L2(18), 1200000 },
-	{ 1, {  1674000, HFPLL, 1, 0, 0x3A }, L2(18), 1175000 },
-	{ 1, {  1728000, HFPLL, 1, 0, 0x3C }, L2(19), 1200000 },
+	{ 1, {  1674000, HFPLL, 1, 0, 0x3A }, L2(18), 1200000 },
+	{ 1, {  1728000, HFPLL, 1, 0, 0x3C }, L2(19), 1225000 },
 	{ 1, {  1809000, HFPLL, 1, 0, 0x3E }, L2(19), 1250000 },
-	{ 1, {  1890000, HFPLL, 1, 0, 0x40 }, L2(19), 1300000 },
+	{ 1, {  1900000, HFPLL, 1, 0, 0x40 }, L2(19), 1300000 },
 	{ 0, { 0 } }
 };
 
@@ -560,7 +562,7 @@ static struct acpu_level acpu_freq_tbl_8960_kraitv2_fast[] = {
 	{ 1, {  1674000, HFPLL, 1, 0, 0x3A }, L2(18), 1175000 },
 	{ 1, {  1728000, HFPLL, 1, 0, 0x3C }, L2(19), 1200000 },
 	{ 1, {  1809000, HFPLL, 1, 0, 0x3E }, L2(19), 1250000 },
-	{ 1, {  1998000, HFPLL, 1, 0, 0x42 }, L2(19), 1300000 },
+	{ 1, {  1998000, HFPLL, 1, 0, 0x40 }, L2(19), 1300000 },
 	{ 0, { 0 } }
 };
 #else
@@ -1309,6 +1311,53 @@ static void __init bus_init(unsigned int init_bw)
 	ret = msm_bus_scale_client_update_request(bus_perf_client, init_bw);
 	if (ret)
 		pr_err("initial bandwidth request failed (%d)\n", ret);
+}
+
+ssize_t vc_get_vdd(char *buf)
+{
+	int i = 0, len = 0;
+
+	if (buf) {
+	mutex_lock(&driver_lock);
+		while(acpu_freq_tbl[i].speed.khz != 0) i++;
+
+		for(i--; i >= 0; i--) {
+			if (acpu_freq_tbl[i].use_for_scaling) {
+				len += sprintf(buf + len, "%umhz: %d mV\n",
+					(unsigned int)acpu_freq_tbl[i].speed.khz/1000,
+					acpu_freq_tbl[i].vdd_core/1000 );
+				}
+		}
+		mutex_unlock(&driver_lock);
+	}
+	return len;
+}
+
+void vc_set_vdd(const char *buf)
+{
+	int ret, i = 0;
+	char size_cur[16];
+	unsigned int volt;
+
+	while(acpu_freq_tbl[i].speed.khz != 0) i++;
+
+	mutex_lock(&driver_lock);
+
+	for(i--; i >= 0; i--) {
+		ret = sscanf(buf, "%d", &volt);
+
+		if (acpu_freq_tbl[i].use_for_scaling) {
+			pr_info("Voltage for %u changed to %d\n",
+				acpu_freq_tbl[i].speed.khz, volt*1000);
+			acpu_freq_tbl[i].vdd_core = min(max((unsigned int)volt*1000,
+				(unsigned int)HFPLL_LOW_VDD), (unsigned int)HFPLL_MAX_VDD);
+
+			ret = sscanf(buf, "%s", size_cur);
+			buf += (strlen(size_cur)+1);
+		}
+	}
+
+	mutex_unlock(&driver_lock);
 }
 
 #ifdef CONFIG_CPU_FREQ_MSM
