@@ -245,7 +245,7 @@ static DEFINE_MUTEX(sched_domains_mutex);
 
 struct cfs_rq;
 
-static LIST_HEAD(task_groups);
+extern struct list_head task_groups;
 
 /* task group related information */
 struct task_group {
@@ -306,6 +306,7 @@ static int root_task_group_load = ROOT_TASK_GROUP_LOAD;
  *	Every task in system belong to this group at bootup.
  */
 struct task_group root_task_group;
+LIST_HEAD(task_groups);
 
 #endif	/* CONFIG_CGROUP_SCHED */
 
