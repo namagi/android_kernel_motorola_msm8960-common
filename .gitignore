@@ -83,4 +83,4 @@ GTAGS
 
 arm-eabi-*/
 nbproject/
-build-kernel.sh
+/build-*.sh
