@@ -80,3 +80,7 @@ GTAGS
 *.orig
 *~
 \#*#
+
+arm-eabi-*/
+nbproject/
+build-kernel.sh
