@@ -77,7 +77,7 @@ static int kgsl_iommu_fault_handler(struct iommu_domain *domain,
 {
 	struct kgsl_iommu_unit *iommu_unit = get_iommu_unit(dev);
 	struct kgsl_iommu_device *iommu_dev = get_iommu_device(iommu_unit, dev);
-	unsigned int ptbase, fsr;
+	unsigned int ptbase/*, fsr*/;
 
 	if (!iommu_dev) {
 		KGSL_CORE_ERR("Invalid IOMMU device %p\n", dev);
@@ -86,7 +86,7 @@ static int kgsl_iommu_fault_handler(struct iommu_domain *domain,
 
 	ptbase = iommu_get_pt_base_addr(domain);
 
-	fsr = KGSL_IOMMU_GET_IOMMU_REG(iommu_unit->reg_map.hostptr,
+/*	fsr = KGSL_IOMMU_GET_IOMMU_REG(iommu_unit->reg_map.hostptr,
 		iommu_dev->ctx_id, FSR);
 
 	KGSL_MEM_CRIT(iommu_dev->kgsldev,
@@ -94,7 +94,7 @@ static int kgsl_iommu_fault_handler(struct iommu_domain *domain,
 		addr, kgsl_mmu_get_ptname_from_ptbase(ptbase));
 	KGSL_MEM_CRIT(iommu_dev->kgsldev, "context = %d FSR = %X\n",
 		iommu_dev->ctx_id, fsr);
-
+*/
 	trace_kgsl_mmu_pagefault(iommu_dev->kgsldev, addr,
 			kgsl_mmu_get_ptname_from_ptbase(ptbase), 0);
 
