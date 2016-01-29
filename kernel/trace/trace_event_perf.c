@@ -151,7 +151,8 @@ int perf_trace_add(struct perf_event *p_event, int flags)
 
 void perf_trace_del(struct perf_event *p_event, int flags)
 {
-	hlist_del_rcu(&p_event->hlist_entry);
+	if (!hlist_unhashed(&p_event->hlist_entry))
+		hlist_del_rcu(&p_event->hlist_entry);
 }
 
 void perf_trace_destroy(struct perf_event *p_event)
